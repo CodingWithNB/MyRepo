@@ -1,0 +1,50 @@
+name: Output to Excel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set Outputs
+        id: generate_outputs
+        run: |
+          echo "::set-output name=output_1::Value 1"
+          echo "::set-output name=output_2::Value 2"
+          echo "::set-output name=output_3::Value 3"
+
+      - name: Save Outputs to Env
+        run: |
+          echo "OUTPUT_1=${{ steps.generate_outputs.outputs.output_1 }}" >> $env:GITHUB_ENV
+          echo "OUTPUT_2=${{ steps.generate_outputs.outputs.output_2 }}" >> $env:GITHUB_ENV
+          echo "OUTPUT_3=${{ steps.generate_outputs.outputs.output_3 }}" >> $env:GITHUB_ENV
+
+      - name: Install ImportExcel Module
+        shell: pwsh
+        run: Install-Module -Name ImportExcel -Scope CurrentUser -Force
+
+      - name: Create Excel File
+        shell: pwsh
+        run: |
+          $resultFilePath = "C:\Users\NiharikaBasrani\outputs.xlsx"
+          $data = @(
+              [PSCustomObject]@{ Key = "Output 1"; Value = "$env:OUTPUT_1" }
+              [PSCustomObject]@{ Key = "Output 2"; Value = "$env:OUTPUT_2" }
+              [PSCustomObject]@{ Key = "Output 3"; Value = "$env:OUTPUT_3" }
+          )
+          $data | Export-Excel -Path $resultFilePath -WorksheetName "Results"
+          Write-Output "Test results saved to $resultFilePath"
+
+      - name: Upload Excel file
+        uses: actions/upload-artifact@v2
+        with:
+          name: outputs
+          path: C:\Users\NiharikaBasrani\outputs.xlsx
