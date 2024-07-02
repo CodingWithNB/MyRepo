@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    
 
     steps:
       - name: Checkout repository
@@ -28,9 +27,24 @@ jobs:
           echo "OUTPUT_2=${{ steps.generate_outputs.outputs.output_2 }}" >> $env:GITHUB_ENV
           echo "OUTPUT_3=${{ steps.generate_outputs.outputs.output_3 }}" >> $env:GITHUB_ENV
 
-      - name: Install ImportExcel Module
+      - name: Install ImportExcel Module if Not Exists
         shell: pwsh
-        run: Install-Module -Name ImportExcel -Scope CurrentUser -Force
+        run: |
+          if (-not (Get-Module -ListAvailable -Name ImportExcel)) {
+              Install-Module -Name ImportExcel -Scope CurrentUser -Force
+              Write-Output "ImportExcel module installed."
+          } else {
+              Write-Output "ImportExcel module is already installed."
+          }
+
+      - name: Verify ImportExcel Module Installation
+        shell: pwsh
+        run: |
+          if (Get-Module -ListAvailable -Name ImportExcel) {
+              Write-Output "ImportExcel module is available."
+          } else {
+              Write-Output "ImportExcel module is NOT available."
+          }
 
       - name: Create Excel File
         shell: pwsh
