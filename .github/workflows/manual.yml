@@ -34,7 +34,11 @@ jobs:
       - name: Create Excel File
         shell: pwsh
         run: |
-          $resultFilePath = "C:\Users\NiharikaBasrani\outputs.xlsx"
+          $resultDir = "C:\Users\NiharikaBasrani"
+          $resultFilePath = "$resultDir\outputs.xlsx"
+          if (-not (Test-Path $resultDir)) {
+              New-Item -Path $resultDir -ItemType Directory
+          }
           $data = @(
               [PSCustomObject]@{ Key = "Output 1"; Value = "$env:OUTPUT_1" }
               [PSCustomObject]@{ Key = "Output 2"; Value = "$env:OUTPUT_2" }
@@ -42,6 +46,11 @@ jobs:
           )
           $data | Export-Excel -Path $resultFilePath -WorksheetName "Results"
           Write-Output "Test results saved to $resultFilePath"
+          Get-Item $resultFilePath
+
+      - name: List directory contents
+        shell: pwsh
+        run: Get-ChildItem -Path C:\Users\NiharikaBasrani
 
       - name: Upload Excel file
         uses: actions/upload-artifact@v2
