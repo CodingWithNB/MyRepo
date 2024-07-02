@@ -1,75 +1,31 @@
-name: Output to Excel
+name: Add Numbers and Save to Excel
 
 on:
   push:
     branches:
       - main
-      
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
-    runs-on: windows-latest
-
+  add-numbers-and-save:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set Outputs
-        id: generate_outputs
+      - name: Perform addition and save to file
         run: |
-          echo "::set-output name=output_1::Value 1"
-          echo "::set-output name=output_2::Value 2"
-          echo "::set-output name=output_3::Value 3"
-
-      - name: Save Outputs to Env
-        run: |
-          echo "OUTPUT_1=${{ steps.generate_outputs.outputs.output_1 }}" >> $env:GITHUB_ENV
-          echo "OUTPUT_2=${{ steps.generate_outputs.outputs.output_2 }}" >> $env:GITHUB_ENV
-          echo "OUTPUT_3=${{ steps.generate_outputs.outputs.output_3 }}" >> $env:GITHUB_ENV
-
-      - name: Install ImportExcel Module if Not Exists
-        shell: pwsh
-        run: |
-          if (-not (Get-Module -ListAvailable -Name ImportExcel)) {
-              Install-Module -Name ImportExcel -Scope CurrentUser -Force
-              Write-Output "ImportExcel module installed."
-          } else {
-              Write-Output "ImportExcel module is already installed."
-          }
-
-      - name: Verify ImportExcel Module Installation
-        shell: pwsh
-        run: |
-          if (Get-Module -ListAvailable -Name ImportExcel) {
-              Write-Output "ImportExcel module is available."
-          } else {
-              Write-Output "ImportExcel module is NOT available."
-          }
-
-      - name: Create Excel File
-        shell: pwsh
-        run: |
-          $resultDir = "C:\Users\NiharikaBasrani"
-          $resultFilePath = "$resultDir\outputs.xlsx"
-          if (-not (Test-Path $resultDir)) {
-              New-Item -Path $resultDir -ItemType Directory
-          }
-          $data = @(
-              [PSCustomObject]@{ Key = "Output 1"; Value = "$env:OUTPUT_1" }
-              [PSCustomObject]@{ Key = "Output 2"; Value = "$env:OUTPUT_2" }
-              [PSCustomObject]@{ Key = "Output 3"; Value = "$env:OUTPUT_3" }
-          )
-          $data | Export-Excel -Path $resultFilePath -WorksheetName "Results"
-          Write-Output "Test results saved to $resultFilePath"
-          Get-Item $resultFilePath
-
-      - name: List directory contents
-        shell: pwsh
-        run: Get-ChildItem -Path C:\Users\NiharikaBasrani
-
-      - name: Upload Excel file
-        uses: actions/upload-artifact@v2
-        with:
-          name: outputs
-          path: C:\Users\NiharikaBasrani\outputs.xlsx
+          num1=10
+          num2=20
+          result=$((num1 + num2))
+          
+          # Print the result
+          echo "Result of $num1 + $num2 = $result"
+          
+          # Save result to a file (Excel simulation)
+          echo "Number 1, Number 2, Result" > output.csv
+          echo "$num1, $num2, $result" >> output.csv
+          
+          echo "Result saved to output.csv"
