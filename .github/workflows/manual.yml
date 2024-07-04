@@ -29,3 +29,9 @@ jobs:
           echo "$num1, $num2, $result" >> output.csv
           
           echo "Result saved to output.csv"
+
+      - name: Upload output file
+        uses: actions/upload-artifact@v3
+        with:
+          name: output-csv
+          path: output.csv
